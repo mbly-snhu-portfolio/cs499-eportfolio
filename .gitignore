@@ -212,6 +212,14 @@ lerna-debug.log*
 *.rar
 *.7z
 
+# Office documents
+*.docx
+*.doc
+*.xlsx
+*.xls
+*.pptx
+*.ppt
+
 # Docker volumes and data
 docker-volumes/
 *.data/
