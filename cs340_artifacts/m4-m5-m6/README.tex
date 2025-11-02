@@ -1,0 +1,341 @@
+\documentclass[11pt]{article}
+\usepackage[margin=1in]{geometry}
+\usepackage{fontspec}
+\setmainfont{IBM Plex Sans}
+\setsansfont{IBM Plex Sans}
+\setmonofont{IBM Plex Mono}
+\usepackage{microtype}
+\usepackage{titlesec}
+\usepackage{enumitem}
+\usepackage{hyperref}
+\hypersetup{colorlinks=true, linkcolor=[rgb]{0.0,0.2,0.6}, urlcolor=[rgb]{0.0,0.2,0.6}, citecolor=[rgb]{0.0,0.2,0.6}}
+\usepackage{xcolor}
+\usepackage{listings}
+\titleformat{\paragraph}[runin]{\bfseries}{}{}{}
+\titlespacing*{\paragraph}{0pt}{0.5em}{0.6em}
+\setlist{itemsep=2pt, topsep=4pt, parsep=0pt, partopsep=0pt}
+\lstset{basicstyle=\ttfamily\small, breaklines=true, showstringspaces=false, aboveskip=0.3em, belowskip=0.3em}
+\emergencystretch=2em
+
+\title{AnimalShelter Project --- README}
+\author{}
+\date{\today}
+
+\begin{document}
+\maketitle
+
+\section*{Overview}
+AnimalShelter provides Create, Read, Update, and Delete (CRUD) access to the Austin Animal Center (AAC) dataset using MongoDB and PyMongo. The repository includes a robust CRUD class, a data importer with batching and duplicate avoidance, and a reproducible dashboard notebook featuring an interactive map, chart, and data table.
+
+\section*{Features}
+\begin{itemize}[leftmargin=*]
+  \item CRUD class with clear contracts and input validation
+  \item Data importer with duplicate detection, batching, and progress reporting
+  \item Docker-based local environment with optional automated import
+  \item Jupyter notebook dashboard (Dash + dash-leaflet + ECharts)
+\end{itemize}
+
+\section*{Architecture}
+\begin{itemize}[leftmargin=*]
+  \item \textbf{Data Layer}: MongoDB collection (default: \texttt{animals} in DB \texttt{aac}).
+  \item \textbf{Access Layer}: \texttt{animal\_shelter/animal\_shelter.py} exposes a typed CRUD API.
+  \item \textbf{Import Layer}: \texttt{animal\_shelter/data\_importer.py} loads, cleans, and batches CSV records.
+  \item \textbf{Interface}: Jupyter notebook dashboard (map, chart, table) for exploration and reporting.
+\end{itemize}
+
+\section*{Repository Structure}
+\begin{lstlisting}
+m4-m5-m6/
+├── animal_shelter/
+│   ├── __init__.py
+│   ├── animal_shelter.py
+│   └── data_importer.py
+├── assets/
+│   └── aac_shelter_outcomes.csv (optional)
+├── docs/
+├── notebooks/
+│   ├── ProjectTwoDashboard.ipynb
+│   └── ModuleSixMilestone.ipynb
+├── import_aac_data.py
+├── docker-compose.yml
+├── Dockerfile.importer
+├── requirements.txt
+└── README.md (original Markdown)
+\end{lstlisting}
+
+\section*{Data Model and Schema}
+The importer normalizes column names to lowercase. Common fields in the AAC dataset include:
+\begin{itemize}[leftmargin=*]
+  \item \texttt{animal\_id} (string, expected unique), \texttt{name} (string)
+  \item \texttt{animal\_type} (string), \texttt{breed} (string)
+  \item \texttt{age\_upon\_outcome} (string), \texttt{outcome\_type} (string)
+  \item Additional columns are preserved as-is (free-form schema).
+\end{itemize}
+Primary keys are not enforced at the database level. Deduplication is performed during import by dropping duplicate \texttt{animal\_id} entries.
+
+\section*{System Requirements}
+\begin{itemize}[leftmargin=*]
+  \item Python: 3.10 or newer
+  \item Docker and Docker Compose (optional, for local MongoDB)
+\end{itemize}
+
+\section*{Installation}
+\begin{enumerate}[leftmargin=*]
+  \item Create and activate a virtual environment.
+  \begin{lstlisting}[language=bash]
+python -m venv .venv
+source .venv/bin/activate  # Windows: .venv\Scripts\activate
+  \end{lstlisting}
+  \item Install dependencies.
+  \begin{lstlisting}[language=bash]
+pip install --upgrade pip
+pip install -r requirements.txt
+  \end{lstlisting}
+  \item (Optional) Start local services with Docker.
+  \begin{lstlisting}[language=bash]
+docker-compose up -d
+  \end{lstlisting}
+  If \texttt{assets/aac\_shelter\_outcomes.csv} is present, the importer runs automatically.
+\end{enumerate}
+
+\section*{Configuration}
+Copy \texttt{env.example} to \texttt{.env} and update values as needed. Common variables include:
+\begin{itemize}[leftmargin=*]
+  \item \texttt{MONGODB\_HOST}, \texttt{MONGODB\_PORT}
+  \item \texttt{AAC\_DATABASE}, \texttt{AAC\_COLLECTION}
+  \item \texttt{AAC\_USER}, \texttt{AAC\_PASS}
+  \item \texttt{BATCH\_SIZE}, \texttt{LOG\_LEVEL}
+  \item \texttt{CSV\_SEARCH\_PATHS}
+\end{itemize}
+
+\subsection*{Environment Variables (Details)}
+The application reads multiple environment variables with sensible fallbacks:
+\begin{itemize}[leftmargin=*]
+  \item Connection user/password: \texttt{MONGO\_USER}/\texttt{MONGO\_PASS} (fallbacks: \texttt{AAC\_USER}/\texttt{AAC\_PASS})
+  \item Host/Port: \texttt{MONGO\_HOST}/\texttt{MONGO\_PORT} (fallbacks: \texttt{MONGODB\_HOST}/\texttt{MONGODB\_PORT}, defaults \texttt{localhost}:\texttt{27017})
+  \item Database/Collection: \texttt{AAC\_DATABASE} (default \texttt{aac}), \texttt{AAC\_COLLECTION} (default \texttt{animals})
+  \item Logging: \texttt{LOG\_LEVEL} (default \texttt{INFO})
+  \item Importer batch size: \texttt{BATCH\_SIZE} (default \texttt{1000})
+  \item CSV search paths: \texttt{CSV\_SEARCH\_PATHS} (comma-separated list; includes \texttt{./assets/aac\_shelter\_outcomes.csv} by default)
+\end{itemize}
+
+\subsection*{Sample .env}
+\begin{lstlisting}[language=bash]
+# Mongo credentials
+AAC_USER=aacuser
+AAC_PASS=changeme
+
+# Mongo connection
+MONGODB_HOST=localhost
+MONGODB_PORT=27017
+AAC_DATABASE=aac
+AAC_COLLECTION=animals
+
+# Importer
+BATCH_SIZE=1000
+CSV_SEARCH_PATHS=./assets/aac_shelter_outcomes.csv,./aac_shelter_outcomes.csv,./data/aac_shelter_outcomes.csv
+
+# Logging
+LOG_LEVEL=INFO
+\end{lstlisting}
+
+\section*{Usage}
+\subsection*{CRUD Example}
+\begin{lstlisting}[language=Python]
+from animal_shelter import AnimalShelter
+
+shelter = AnimalShelter()
+
+animal_data = {
+    "animal_id": "A123456",
+    "name": "Buddy",
+    "animal_type": "Dog",
+    "breed": "Golden Retriever"
+}
+
+result = shelter.create(animal_data)
+all_animals = shelter.read()
+dogs = shelter.read({"animal_type": "Dog"})
+
+shelter.close_connection()
+\end{lstlisting}
+
+\subsection*{Data Import}
+\begin{lstlisting}[language=bash]
+# Verify if data exists
+python import_aac_data.py --check-only
+
+# Import the dataset (skips if already present)
+python import_aac_data.py
+
+# Force re-import
+python import_aac_data.py --force
+
+# Tune batch size
+python import_aac_data.py --batch-size 500
+\end{lstlisting}
+
+\paragraph{CSV Locations} Place \texttt{aac\_shelter\_outcomes.csv} in \texttt{assets/} to enable automatic import when using Docker. The importer also searches the current working directory and other common paths.
+
+\subsection*{Importer CLI}
+The repository includes a convenience script for import orchestration.
+\begin{lstlisting}[language=bash]
+# Check only (no import)
+python import_aac_data.py --check-only
+
+# Import if missing (skips when data already exists unless forced)
+python import_aac_data.py
+
+# Force reimport and use a custom batch size
+python import_aac_data.py --force --batch-size 500
+\end{lstlisting}
+Behavior:
+\begin{itemize}[leftmargin=*]
+  \item Detects existing data and skips unless \texttt{--force} is specified.
+  \item Cleans data (lowercases columns, drops empty/duplicate \texttt{animal\_id}).
+  \item Imports in batches with a progress bar and aggregates success/failure stats.
+  \item Verifies import with collection stats and record samples.
+\end{itemize}
+
+\subsection*{Indexes and Performance}
+Call \texttt{AnimalShelter.ensure\_indexes()} to optimize common queries. Created indexes:
+\begin{itemize}[leftmargin=*]
+  \item \texttt{animal\_id}, \texttt{animal\_type}, \texttt{breed}, \texttt{outcome\_type}, \texttt{age\_upon\_outcome}
+\end{itemize}
+Guidelines:
+\begin{itemize}[leftmargin=*]
+  \item Prefer projections when reading large datasets.
+  \item Use server-side filters (\texttt{read({...})}) to minimize transfers.
+  \item Tune \texttt{BATCH\_SIZE} for import throughput; 500--2000 is a good starting range.
+\end{itemize}
+
+\section*{Dashboard}
+Open the notebook and run all cells to start the Dash app in external mode.
+\begin{lstlisting}[language=bash]
+jupyter notebook notebooks/ProjectTwoDashboard.ipynb
+\end{lstlisting}
+Capabilities:
+\begin{itemize}[leftmargin=*]
+  \item Interactive filters for rescue categories (All, Water Rescue, Mountain/Wilderness, Disaster/Tracking).
+  \item Data table with sorting, pagination, and row selection driving the map.
+  \item Map (dash-leaflet) with base layer switching, clustering, auto-fit bounds, and scale control.
+  \item Chart (ECharts) supporting bar, pie, and treemap visualizations of top breeds.
+\end{itemize}
+
+\section*{Docker Usage}
+This repository includes a Compose file for a local stack:
+\begin{itemize}[leftmargin=*]
+  \item \textbf{mongodb}: MongoDB 7 with persistent volume and optional init script.
+  \item \textbf{mongo-express}: Admin UI on \texttt{http://localhost:8081} (basic auth enabled in compose).
+  \item \textbf{data-importer}: One-shot container that runs the importer at startup.
+\end{itemize}
+\begin{lstlisting}[language=bash]
+docker-compose up -d        # start MongoDB and mongo-express
+# (optional) run importer container once or re-run as needed
+docker-compose up --build data-importer
+\end{lstlisting}
+Ensure \texttt{.env} is populated (see sample above). The importer container mounts \texttt{./assets} read-only.
+
+\section*{API Reference (Python)}
+\subsection*{Class: AnimalShelter}
+\paragraph{Constructor}
+\begin{lstlisting}[language=Python]
+from typing import Optional
+
+AnimalShelter(user: Optional[str] = None,
+              password: Optional[str] = None,
+              host: Optional[str] = None,
+              port: Optional[int] = None)
+\end{lstlisting}
+\begin{itemize}[leftmargin=*]
+  \item Parameters fall back to environment variables.
+  \item Connection is validated using an admin ping.
+\end{itemize}
+
+\paragraph{create}
+\begin{lstlisting}[language=Python]
+create(data: dict) -> bool
+\end{lstlisting}
+Insert a single document; raises on invalid input.
+
+\paragraph{read}
+\begin{lstlisting}[language=Python]
+read(criteria: dict | None = None) -> list[dict]
+\end{lstlisting}
+Return all documents or those matching \texttt{criteria}.
+
+\paragraph{read\_by\_id}
+\begin{lstlisting}[language=Python]
+read_by_id(animal_id: str) -> dict | None
+\end{lstlisting}
+Return a single document by \texttt{animal\_id}.
+
+\paragraph{update}
+\begin{lstlisting}[language=Python]
+update(criteria: dict, update_values: dict, many: bool = False) -> int
+\end{lstlisting}
+Apply MongoDB update operators (e.g., \texttt{\$set}); returns modified count.
+
+\paragraph{delete}
+\begin{lstlisting}[language=Python]
+delete(criteria: dict, many: bool = False) -> int
+\end{lstlisting}
+Delete matching documents; returns deleted count.
+
+\paragraph{get\_collection\_stats}
+\begin{lstlisting}[language=Python]
+get_collection_stats() -> dict
+\end{lstlisting}
+Return basic stats (document count, connection details).
+
+\paragraph{ensure\_indexes}
+\begin{lstlisting}[language=Python]
+ensure_indexes() -> None
+\end{lstlisting}
+Create recommended indexes; safe to call multiple times.
+
+\paragraph{close\_connection}
+\begin{lstlisting}[language=Python]
+close_connection() -> None
+\end{lstlisting}
+Close the underlying MongoDB client.
+
+\section*{Testing}
+\begin{lstlisting}[language=bash]
+python -m pytest test_animal_shelter.py -v
+\end{lstlisting}
+
+\section*{Troubleshooting}
+\begin{itemize}[leftmargin=*]
+  \item \textbf{pandas on Python 3.13}: use the provided constraints file.
+  \begin{lstlisting}[language=bash]
+pip install -r requirements-py313.txt
+  \end{lstlisting}
+  \item \textbf{CSV not found}: ensure \texttt{assets/aac\_shelter\_outcomes.csv} exists or provide a path via arguments or environment.
+  \item \textbf{MongoDB connection}: verify host, port, and credentials; ensure Docker services are running when applicable.
+  \item \textbf{Authentication failed}: confirm \texttt{AAC\_USER}/\texttt{AAC\_PASS} and that the database exists.
+  \item \textbf{Windows paths}: use escaped backslashes or forward slashes in paths passed to Python.
+\end{itemize}
+
+\section*{FAQ}
+\begin{description}[leftmargin=*, labelindent=0em]
+  \item[Can I import a subset of columns?] Yes. Preprocess the CSV before import; extra columns are preserved.
+  \item[How do I re-run the importer safely?] Use \texttt{--force}. Consider clearing the collection first or using upserts if you enforce unique indexes.
+  \item[Where do I change the default search paths?] Set \texttt{CSV\_SEARCH\_PATHS} in \texttt{.env} as a comma-separated list.
+\end{description}
+
+\section*{References}
+\begin{itemize}[leftmargin=*]
+  \item \href{https://www.mongodb.com/docs/}{MongoDB Documentation}
+  \item \href{https://pymongo.readthedocs.io/}{PyMongo Documentation}
+  \item \href{https://dash.plotly.com/}{Dash}
+  \item \href{https://echarts.apache.org/}{Apache ECharts}
+  \item \href{https://jupyter.org/}{Jupyter}
+\end{itemize}
+
+\vspace{1em}
+\noindent\textit{Typeset with IBM Plex. Compiled with XeLaTeX.}
+
+\end{document}
+
+

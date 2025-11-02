@@ -1,0 +1,1 @@
+mongosh --username=${AAC_USER} --password="${AAC_PASS}" --authenticationDatabase=admin --host=${MONGO_HOST} --port=${MONGO_PORT}

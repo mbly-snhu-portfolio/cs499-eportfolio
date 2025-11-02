@@ -1,0 +1,62 @@
+services:
+  mongodb:
+    image: mongo:7.0
+    container_name: aac_mongodb
+    restart: unless-stopped
+    ports:
+      - "27017:27017"
+    env_file:
+      - .env
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${AAC_USER}
+      MONGO_INITDB_ROOT_PASSWORD: ${AAC_PASS}
+      MONGO_INITDB_DATABASE: ${AAC_DATABASE}
+    volumes:
+      - mongodb_data:/data/db
+      - ./init-mongo.js:/docker-entrypoint-initdb.d/init-mongo.js:ro
+    networks:
+      - aac_network
+
+  mongo-express:
+    image: mongo-express:latest
+    container_name: aac_mongo_express
+    restart: unless-stopped
+    ports:
+      - "8081:8081"
+    env_file:
+      - .env
+    environment:
+      ME_CONFIG_MONGODB_ADMINUSERNAME: ${AAC_USER}
+      ME_CONFIG_MONGODB_ADMINPASSWORD: ${AAC_PASS}
+      ME_CONFIG_MONGODB_URL: mongodb://${AAC_USER}:${AAC_PASS}@mongodb:27017/
+      ME_CONFIG_BASICAUTH_USERNAME: admin
+      ME_CONFIG_BASICAUTH_PASSWORD: admin123
+    depends_on:
+      - mongodb
+    networks:
+      - aac_network
+
+  data-importer:
+    build:
+      context: .
+      dockerfile: Dockerfile.importer
+    container_name: aac_data_importer
+    env_file:
+      - .env
+    environment:
+      - MONGODB_HOST=mongodb
+      - MONGODB_PORT=27017
+    volumes:
+      - ./assets:/app/assets:ro
+    depends_on:
+      - mongodb
+    networks:
+      - aac_network
+    restart: "no"
+
+volumes:
+  mongodb_data:
+
+networks:
+  aac_network:
+    driver: bridge 
