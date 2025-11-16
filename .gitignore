@@ -244,3 +244,8 @@ Thumbs.db
 # *.jpeg
 # screenshots/
 
+# Module files
+m*/
+
+# Documentation folders
+docs/
