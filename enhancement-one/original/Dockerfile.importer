@@ -1,0 +1,31 @@
+FROM python:3.11-slim
+
+# Set working directory
+WORKDIR /app
+
+# Copy requirements and install dependencies
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Copy the animal_shelter package
+COPY animal_shelter/ ./animal_shelter/
+
+# Copy the import script and startup script
+COPY import_aac_data.py .
+COPY scripts/startup.sh .
+
+# Create assets directory
+RUN mkdir -p assets
+
+# Set default environment variables (can be overridden by .env file)
+ENV AAC_USER=aacuser
+ENV AAC_PASS=SECRET
+ENV MONGODB_HOST=mongodb
+ENV MONGODB_PORT=27017
+ENV AAC_DATABASE=aac
+ENV AAC_COLLECTION=animals
+ENV LOG_LEVEL=INFO
+ENV BATCH_SIZE=1000
+
+# Use startup script
+CMD ["./startup.sh"] 

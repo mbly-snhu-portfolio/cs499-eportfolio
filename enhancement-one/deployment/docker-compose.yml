@@ -1,0 +1,71 @@
+version: '3.8'
+
+services:
+  mongodb:
+    image: mongo:7
+    container_name: grazioso-mongodb
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: aacuser
+      MONGO_INITDB_ROOT_PASSWORD: SECRET
+      MONGO_INITDB_DATABASE: aac
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongodb_data:/data/db
+    networks:
+      - grazioso-network
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build:
+      context: ../backend
+      dockerfile: Dockerfile
+    container_name: grazioso-backend
+    environment:
+      MONGODB_HOST: mongodb
+      MONGODB_PORT: 27017
+      MONGO_USER: aacuser
+      MONGO_PASS: SECRET
+      AAC_DATABASE: aac
+      AAC_COLLECTION: animals
+      SECRET_KEY: your-secret-key-change-in-production
+      CORS_ORIGINS: http://localhost:3000,http://localhost:5173,http://localhost:80
+      DEBUG: "True"
+    ports:
+      - "8000:8000"
+    depends_on:
+      mongodb:
+        condition: service_healthy
+    networks:
+      - grazioso-network
+    volumes:
+      - ../backend/logs:/app/logs
+      - ../original:/app/original:ro
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: ../frontend
+      dockerfile: Dockerfile
+    container_name: grazioso-frontend
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+    networks:
+      - grazioso-network
+    restart: unless-stopped
+    environment:
+      - VITE_API_BASE_URL=http://localhost:8000
+
+volumes:
+  mongodb_data:
+
+networks:
+  grazioso-network:
+    driver: bridge
+

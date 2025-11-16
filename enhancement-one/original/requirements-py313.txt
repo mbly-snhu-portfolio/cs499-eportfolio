@@ -1,0 +1,25 @@
+# Python 3.13 Compatible Requirements
+# Use this file if you're using Python 3.13 and encounter compatibility issues
+
+pymongo>=4.6.1
+pandas>=2.2.0
+jupyter>=1.0.0
+ipykernel>=6.27.1
+matplotlib>=3.8.2
+seaborn>=0.13.0
+python-dotenv>=1.0.0
+pytest>=7.4.3
+pytest-mock>=3.12.0
+tqdm>=4.66.1 
+
+# Added for Module 5 Dash assignment
+dash==2.16.1
+plotly>=5.17.0
+
+# For the QR code easter egg
+qrcode==7.4.2
+pillow>=10.0.0
+
+# Module 6 mapping and notebook server
+dash-leaflet==0.1.28
+jupyter-dash==0.4.2
