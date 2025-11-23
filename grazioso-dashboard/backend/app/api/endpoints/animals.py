@@ -2,7 +2,7 @@
 Animals API endpoints.
 """
 from fastapi import APIRouter, Depends, HTTPException, Query, Request
-from typing import Optional, Dict, Any
+from typing import Optional, Dict, Any, List
 from app.models.animal import (
     AnimalCreate,
     AnimalUpdate,
@@ -57,8 +57,8 @@ async def list_animals(
             if breed:
                 criteria["breed"] = {"$regex": breed, "$options": "i"}
         
-        # Get animals
-        animals = service.read(criteria=criteria, skip=skip, limit=limit)
+        # Get animals (use cached version)
+        animals = service.read_cached(criteria=criteria, skip=skip, limit=limit)
         total = service.count(criteria)
         
         # Audit log
@@ -129,6 +129,9 @@ async def create_animal(
         if not created:
             raise HTTPException(status_code=500, detail="Failed to create animal")
         
+        # Invalidate cache
+        service.invalidate_cache()
+        
         # Audit log
         audit_service.log_operation(
             action="CREATE",
@@ -181,6 +184,9 @@ async def update_animal(
         # Get updated animal
         updated = service.read_by_id(animal_id)
         
+        # Invalidate cache
+        service.invalidate_cache()
+        
         # Audit log
         audit_service.log_operation(
             action="UPDATE",
@@ -231,6 +237,9 @@ async def delete_animal(
         if deleted_count == 0:
             raise HTTPException(status_code=500, detail="Failed to delete animal")
         
+        # Invalidate cache
+        service.invalidate_cache()
+        
         # Audit log
         audit_service.log_operation(
             action="DELETE",
@@ -259,5 +268,114 @@ async def delete_animal(
             ip_address=request.client.host if request else None,
             user_agent=request.headers.get("user-agent") if request else None
         )
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get("/autocomplete/breeds", response_model=List[str])
+@limiter.limit("60/minute")
+async def autocomplete_breeds(
+    q: str = Query(..., min_length=1, description="Breed prefix to search"),
+    limit: int = Query(10, ge=1, le=50, description="Maximum number of results"),
+    current_user: dict = Depends(get_current_active_user),
+    request: Request = None,
+    service: AnimalShelterService = Depends(get_animal_service)
+):
+    """
+    Get breed autocomplete suggestions using Trie data structure.
+    
+    Returns breeds matching the given prefix, sorted by frequency.
+    """
+    try:
+        suggestions = service.autocomplete_breeds(q, limit)
+        
+        # Audit log
+        audit_service.log_operation(
+            action="AUTOCOMPLETE",
+            collection="animals",
+            user_id=current_user["id"],
+            username=current_user["username"],
+            ip_address=request.client.host if request else None,
+            user_agent=request.headers.get("user-agent") if request else None,
+            changes={"query": q, "results_count": len(suggestions)}
+        )
+        
+        return suggestions
+    except Exception as e:
+        logger.error(f"Error in autocomplete: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get("/autocomplete/names", response_model=List[str])
+@limiter.limit("60/minute")
+async def autocomplete_names(
+    q: str = Query(..., min_length=1, description="Name prefix to search"),
+    limit: int = Query(10, ge=1, le=50, description="Maximum number of results"),
+    current_user: dict = Depends(get_current_active_user),
+    request: Request = None,
+    service: AnimalShelterService = Depends(get_animal_service)
+):
+    """
+    Get name autocomplete suggestions using Trie data structure.
+    
+    Returns names matching the given prefix, sorted by frequency.
+    """
+    try:
+        suggestions = service.autocomplete_names(q, limit)
+        
+        # Audit log
+        audit_service.log_operation(
+            action="AUTOCOMPLETE",
+            collection="animals",
+            user_id=current_user["id"],
+            username=current_user["username"],
+            ip_address=request.client.host if request else None,
+            user_agent=request.headers.get("user-agent") if request else None,
+            changes={"query": q, "results_count": len(suggestions)}
+        )
+        
+        return suggestions
+    except Exception as e:
+        logger.error(f"Error in autocomplete: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get("/search/fuzzy", response_model=AnimalListResponse)
+@limiter.limit("60/minute")
+async def fuzzy_search_breeds(
+    q: str = Query(..., min_length=1, description="Breed search query"),
+    threshold: float = Query(0.6, ge=0.0, le=1.0, description="Similarity threshold"),
+    limit: int = Query(10, ge=1, le=100, description="Maximum number of results"),
+    current_user: dict = Depends(get_current_active_user),
+    request: Request = None,
+    service: AnimalShelterService = Depends(get_animal_service)
+):
+    """
+    Perform fuzzy search on breeds using Levenshtein distance algorithm.
+    
+    Returns animals with breeds similar to the query string.
+    """
+    try:
+        animals = service.fuzzy_search_breeds(q, threshold, limit)
+        total = len(animals)
+        
+        # Audit log
+        audit_service.log_operation(
+            action="FUZZY_SEARCH",
+            collection="animals",
+            user_id=current_user["id"],
+            username=current_user["username"],
+            ip_address=request.client.host if request else None,
+            user_agent=request.headers.get("user-agent") if request else None,
+            changes={"query": q, "threshold": threshold, "results_count": total}
+        )
+        
+        return AnimalListResponse(
+            items=[AnimalResponse(**animal, id=animal.get("_id", "")) for animal in animals],
+            total=total,
+            skip=0,
+            limit=limit
+        )
+    except Exception as e:
+        logger.error(f"Error in fuzzy search: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
 

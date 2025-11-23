@@ -60,7 +60,7 @@ As an engineer at a large bank/insurance company, the skills demonstrated in thi
 
 **Aligned Course Outcomes**: Outcomes 1, 2, 4, 5
 
-**Location**: See [`enhancement-one/`](enhancement-one/) directory for complete implementation.
+**Location**: See [`grazioso-dashboard/`](grazioso-dashboard/) directory for complete implementation.
 
 ### Category Two: Algorithms and Data Structures
 
@@ -114,7 +114,7 @@ cs499-eportfolio/
 │   │   ├── notebooks/        # Jupyter notebook dashboard
 │   │   └── ...
 │   └── ...
-├── enhancement-one/          # ✅ Software Design & Engineering Enhancement (COMPLETED)
+├── grazioso-dashboard/      # ✅ Enhanced Animal Shelter Dashboard (Software Design, Algorithms, Databases)
 │   ├── backend/              # FastAPI RESTful API
 │   ├── frontend/             # React application
 │   ├── docs/                 # Documentation and narratives

@@ -2,7 +2,7 @@
 Application configuration settings.
 """
 from pydantic_settings import BaseSettings
-from typing import List
+from typing import List, Optional
 
 
 class Settings(BaseSettings):
@@ -33,6 +33,14 @@ class Settings(BaseSettings):
     # Rate Limiting
     rate_limit_enabled: bool = True
     rate_limit_per_minute: int = 60
+    
+    # Redis Configuration
+    redis_host: str = "localhost"
+    redis_port: int = 6379
+    redis_password: Optional[str] = None
+    redis_db: int = 0
+    redis_enabled: bool = True
+    cache_ttl_seconds: int = 3600  # 1 hour default
     
     @property
     def cors_origins_list(self) -> List[str]:

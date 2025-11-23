@@ -10,6 +10,7 @@ import logging
 from app.core.config import settings
 from app.core.logging_config import setup_logging
 from app.core.database import db_manager
+from app.core.redis import get_redis_client, close_redis_connection, is_redis_available
 from app.core.errors import DatabaseError
 from app.core.rate_limit import limiter, _rate_limit_exceeded_handler
 from app.core.security import SecurityHeadersMiddleware
@@ -33,12 +34,29 @@ async def lifespan(app: FastAPI):
         logger.warning(f"Database connection failed: {e}")
         logger.warning("Server will start but database operations will fail until MongoDB is configured")
     
+    # Initialize Redis connection
+    if settings.redis_enabled:
+        try:
+            get_redis_client()
+            if is_redis_available():
+                logger.info("Redis connection established")
+            else:
+                logger.warning("Redis is configured but not available, using in-memory cache fallback")
+        except Exception as e:
+            logger.warning(f"Redis connection failed: {e}")
+            logger.warning("Using in-memory cache fallback")
+    
     yield
     
     # Shutdown
     logger.info("Shutting down application")
     try:
         db_manager.disconnect()
+    except Exception:
+        pass
+    
+    try:
+        close_redis_connection()
     except Exception:
         pass
 
@@ -98,9 +116,15 @@ async def health_check():
     except Exception:
         db_status = "disconnected"
     
+    # Check Redis connection
+    redis_status = "unavailable"
+    if settings.redis_enabled:
+        redis_status = "connected" if is_redis_available() else "disconnected"
+    
     return {
         "status": "healthy" if db_status == "connected" else "unhealthy",
         "database": db_status,
+        "redis": redis_status,
         "version": settings.app_version
     }
 
