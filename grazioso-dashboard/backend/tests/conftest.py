@@ -24,6 +24,26 @@ def client():
 
 
 @pytest.fixture(scope="function")
+def mongo_available():
+    """
+    Return True if MongoDB is reachable with test settings.
+
+    Many environments (e.g., CI) may not have MongoDB running. Tests that
+    require live DB behavior should skip when MongoDB is unavailable.
+    """
+    try:
+        db_manager.connect()
+        return True
+    except Exception:
+        return False
+    finally:
+        try:
+            db_manager.disconnect()
+        except Exception:
+            pass
+
+
+@pytest.fixture(scope="function")
 def auth_headers(client):
     """Get authentication headers for test user."""
     response = client.post(

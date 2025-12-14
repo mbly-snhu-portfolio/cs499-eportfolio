@@ -10,14 +10,20 @@ from app.core.database import db_manager
 def setup_database():
     """Setup test database."""
     try:
-        db_manager.connect()
+        try:
+            db_manager.connect()
+        except Exception:
+            pytest.skip("MongoDB not available")
         yield
     finally:
-        if db_manager.client:
+        if db_manager.client and db_manager.database is not None:
             # Clean up test data
             test_db = db_manager.client[db_manager.database.name]
             test_db.animals.delete_many({"animal_id": {"$regex": "^TEST"}})
-        db_manager.disconnect()
+        try:
+            db_manager.disconnect()
+        except Exception:
+            pass
 
 
 def test_create_and_read_animal(client: TestClient, admin_headers):

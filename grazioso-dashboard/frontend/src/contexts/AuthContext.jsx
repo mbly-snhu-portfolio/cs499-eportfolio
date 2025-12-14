@@ -1,6 +1,7 @@
 /**
  * Authentication context for managing user state.
  */
+/* eslint-disable react-refresh/only-export-components */
 import { createContext, useContext, useState, useEffect } from 'react';
 import { authAPI } from '../services/api';
 
@@ -28,7 +29,7 @@ export const AuthProvider = ({ children }) => {
           const userData = await authAPI.getCurrentUser();
           setUser(userData);
           setToken(storedToken);
-        } catch (error) {
+        } catch {
           // Token invalid, clear storage
           localStorage.removeItem('access_token');
           localStorage.removeItem('user');

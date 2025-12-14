@@ -1,7 +1,7 @@
 /**
  * Main dashboard page component.
  */
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import FilterControls from '../components/FilterControls';
 import AnimalTable from '../components/AnimalTable';
@@ -21,12 +21,7 @@ const Dashboard = () => {
   const [pagination, setPagination] = useState({ skip: 0, limit: 100, total: 0 });
   const [breedData, setBreedData] = useState([]);
 
-  useEffect(() => {
-    loadAnimals();
-    loadBreedAnalytics();
-  }, [category, pagination.skip, pagination.limit]);
-
-  const loadAnimals = async () => {
+  const loadAnimals = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
@@ -46,9 +41,9 @@ const Dashboard = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [category, pagination.skip, pagination.limit]);
 
-  const loadBreedAnalytics = async () => {
+  const loadBreedAnalytics = useCallback(async () => {
     try {
       const params = category !== 'Reset' ? { category } : {};
       const response = await analyticsAPI.getBreedAnalytics(params);
@@ -56,7 +51,12 @@ const Dashboard = () => {
     } catch (err) {
       console.error('Error loading breed analytics:', err);
     }
-  };
+  }, [category]);
+
+  useEffect(() => {
+    loadAnimals();
+    loadBreedAnalytics();
+  }, [loadAnimals, loadBreedAnalytics]);
 
   const handleCategoryChange = (newCategory) => {
     setCategory(newCategory);

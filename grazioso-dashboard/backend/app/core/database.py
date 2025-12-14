@@ -56,13 +56,13 @@ class DatabaseManager:
     
     def get_collection(self) -> Collection:
         """Get the animals collection."""
-        if not self.collection:
+        if self.collection is None:
             raise RuntimeError("Database not connected. Call connect() first.")
         return self.collection
     
     def get_database(self) -> Database:
         """Get the database instance."""
-        if not self.database:
+        if self.database is None:
             raise RuntimeError("Database not connected. Call connect() first.")
         return self.database
 

@@ -11,8 +11,10 @@ def test_list_animals_unauthorized(client: TestClient):
     assert response.status_code == 401
 
 
-def test_list_animals_authorized(client: TestClient, auth_headers):
+def test_list_animals_authorized(client: TestClient, auth_headers, mongo_available):
     """Test listing animals with authentication."""
+    if not mongo_available:
+        pytest.skip("MongoDB not available")
     response = client.get("/api/animals", headers=auth_headers)
     assert response.status_code == 200
     data = response.json()
@@ -22,8 +24,10 @@ def test_list_animals_authorized(client: TestClient, auth_headers):
     assert "limit" in data
 
 
-def test_list_animals_with_pagination(client: TestClient, auth_headers):
+def test_list_animals_with_pagination(client: TestClient, auth_headers, mongo_available):
     """Test listing animals with pagination."""
+    if not mongo_available:
+        pytest.skip("MongoDB not available")
     response = client.get(
         "/api/animals?skip=0&limit=10",
         headers=auth_headers
@@ -33,8 +37,10 @@ def test_list_animals_with_pagination(client: TestClient, auth_headers):
     assert len(data["items"]) <= 10
 
 
-def test_list_animals_with_category_filter(client: TestClient, auth_headers):
+def test_list_animals_with_category_filter(client: TestClient, auth_headers, mongo_available):
     """Test listing animals with category filter."""
+    if not mongo_available:
+        pytest.skip("MongoDB not available")
     response = client.get(
         "/api/animals?category=Water Rescue",
         headers=auth_headers
@@ -44,8 +50,10 @@ def test_list_animals_with_category_filter(client: TestClient, auth_headers):
     assert "items" in data
 
 
-def test_get_animal_not_found(client: TestClient, auth_headers):
+def test_get_animal_not_found(client: TestClient, auth_headers, mongo_available):
     """Test getting non-existent animal."""
+    if not mongo_available:
+        pytest.skip("MongoDB not available")
     response = client.get(
         "/api/animals/nonexistent",
         headers=auth_headers
@@ -53,8 +61,10 @@ def test_get_animal_not_found(client: TestClient, auth_headers):
     assert response.status_code == 404
 
 
-def test_create_animal_unauthorized(client: TestClient, auth_headers):
+def test_create_animal_unauthorized(client: TestClient, auth_headers, mongo_available):
     """Test creating animal as non-admin."""
+    if not mongo_available:
+        pytest.skip("MongoDB not available")
     response = client.post(
         "/api/animals",
         json={"animal_id": "TEST123", "name": "Test Animal"},
@@ -63,8 +73,10 @@ def test_create_animal_unauthorized(client: TestClient, auth_headers):
     assert response.status_code == 403
 
 
-def test_create_animal_authorized(client: TestClient, admin_headers):
+def test_create_animal_authorized(client: TestClient, admin_headers, mongo_available):
     """Test creating animal as admin."""
+    if not mongo_available:
+        pytest.skip("MongoDB not available")
     response = client.post(
         "/api/animals",
         json={

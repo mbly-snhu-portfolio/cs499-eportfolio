@@ -1,7 +1,6 @@
 /**
  * Layout component with header and logo.
  */
-import { Link } from 'react-router-dom';
 import './Layout.css';
 
 const Layout = ({ user, onLogout, children }) => {
@@ -9,7 +8,7 @@ const Layout = ({ user, onLogout, children }) => {
     <div className="layout">
       <header className="header">
         <div className="header-content">
-          <Link to="https://www.snhu.edu" target="_blank" rel="noopener noreferrer">
+          <a href="https://www.snhu.edu" target="_blank" rel="noopener noreferrer">
             <img
               src="/Grazioso Salvare Logo.png"
               alt="Grazioso Salvare Logo"
@@ -18,7 +17,7 @@ const Layout = ({ user, onLogout, children }) => {
                 e.target.style.display = 'none';
               }}
             />
-          </Link>
+          </a>
           <div className="header-info">
             <h1>Grazioso Salvare Animal Shelter Dashboard</h1>
             <p className="user-info">
