@@ -16,6 +16,9 @@ import {
 import { IconCircleCheck, IconCode, IconLock, IconUser } from '@tabler/icons-react';
 
 export default function PortfolioArtifact() {
+  const dashboardQuickStartUrl =
+    'https://github.com/mbly-snhu-portfolio/cs499-eportfolio/tree/main/grazioso-dashboard#quick-start';
+
   return (
     <Container size="lg" p={0}>
       <Stack gap="lg">
@@ -79,14 +82,17 @@ export default function PortfolioArtifact() {
             <Alert
               variant="light"
               color="cyan"
-              title="Try the dashboard (optional)"
+              title="Try the dashboard (optional, local-only)"
               icon={<IconCode size={18} />}
               mt="md"
             >
               <Text size="sm" mb="xs">
-                You can open the authenticated dashboard from the header button. The portfolio itself is public and does
-                not require login.
+                The dashboard requires running the backend locally (and typically MongoDB/Redis). The GitHub Pages site
+                hosts the portfolio only.
               </Text>
+              <Anchor href={dashboardQuickStartUrl} target="_blank" rel="noreferrer" size="sm">
+                View local setup instructions (Quick Start)
+              </Anchor>
               <Title order={4} size="h6" mb="xs">
                 Demo credentials
               </Title>

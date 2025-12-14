@@ -37,6 +37,9 @@ export default function PortfolioLayout() {
   const { setColorScheme } = useMantineColorScheme();
   const computedColorScheme = useComputedColorScheme('light');
 
+  const dashboardQuickStartUrl =
+    'https://github.com/mbly-snhu-portfolio/cs499-eportfolio/tree/main/grazioso-dashboard#quick-start';
+
   const toggleColorScheme = () => {
     setColorScheme(computedColorScheme === 'dark' ? 'light' : 'dark');
   };
@@ -66,8 +69,15 @@ export default function PortfolioLayout() {
             >
               {computedColorScheme === 'dark' ? <IconSun size={20} /> : <IconMoon size={20} />}
             </ActionIcon>
-            <Button component="a" href="#/app" variant="gradient" gradient={{ from: 'blue', to: 'cyan' }}>
-              Open Dashboard App
+            <Button
+              component="a"
+              href={dashboardQuickStartUrl}
+              target="_blank"
+              rel="noreferrer"
+              variant="gradient"
+              gradient={{ from: 'blue', to: 'cyan' }}
+            >
+              Run Dashboard Locally
             </Button>
           </Group>
         </Group>
