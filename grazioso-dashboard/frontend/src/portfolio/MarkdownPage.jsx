@@ -3,147 +3,70 @@
  *
  * Markdown files are served from frontend/public/ (GitHub Pages friendly).
  */
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
+import { Alert, Button, Code, Group, Paper, ScrollArea, Text, Title } from '@mantine/core';
+
 import useMarkdownAsset from './useMarkdownAsset';
 import './PortfolioLayout.css';
 
-function escapeHtml(text) {
-  return text
-    .replaceAll('&', '&amp;')
-    .replaceAll('<', '&lt;')
-    .replaceAll('>', '&gt;');
-}
-
-function markdownToHtml(md) {
-  // Intentionally minimal: headings, paragraphs, lists, code fences.
-  // This avoids bringing in a new dependency just to render portfolio content.
-  const lines = md.split(/\r?\n/);
-  let html = '';
-  let inCode = false;
-  let inList = false;
-
-  for (const rawLine of lines) {
-    const line = rawLine ?? '';
-
-    if (line.startsWith('```')) {
-      if (!inCode) {
-        if (inList) {
-          html += '</ul>';
-          inList = false;
-        }
-        inCode = true;
-        html += '<pre><code>';
-      } else {
-        inCode = false;
-        html += '</code></pre>';
-      }
-      continue;
-    }
-
-    if (inCode) {
-      html += `${escapeHtml(line)}\n`;
-      continue;
-    }
-
-    const h3 = line.match(/^###\s+(.+)$/);
-    const h2 = line.match(/^##\s+(.+)$/);
-    const h1 = line.match(/^#\s+(.+)$/);
-    const li = line.match(/^-\s+(.+)$/);
-
-    if (h3) {
-      if (inList) {
-        html += '</ul>';
-        inList = false;
-      }
-      html += `<h3>${escapeHtml(h3[1])}</h3>`;
-      continue;
-    }
-
-    if (h2) {
-      if (inList) {
-        html += '</ul>';
-        inList = false;
-      }
-      html += `<h2>${escapeHtml(h2[1])}</h2>`;
-      continue;
-    }
-
-    if (h1) {
-      if (inList) {
-        html += '</ul>';
-        inList = false;
-      }
-      html += `<h1>${escapeHtml(h1[1])}</h1>`;
-      continue;
-    }
-
-    if (li) {
-      if (!inList) {
-        html += '<ul>';
-        inList = true;
-      }
-      html += `<li>${escapeHtml(li[1])}</li>`;
-      continue;
-    }
-
-    if (line.trim() === '') {
-      if (inList) {
-        html += '</ul>';
-        inList = false;
-      }
-      continue;
-    }
-
-    if (inList) {
-      html += '</ul>';
-      inList = false;
-    }
-
-    html += `<p>${escapeHtml(line)}</p>`;
+function CodeBlock({ inline, children, ...props }) {
+  if (inline) {
+    return <Code {...props}>{children}</Code>;
   }
 
-  if (inList) {
-    html += '</ul>';
-  }
-
-  if (inCode) {
-    html += '</code></pre>';
-  }
-
-  return html;
+  return (
+    <ScrollArea type="auto" offsetScrollbars>
+      <pre className="portfolio-codeBlock">
+        <code {...props}>{children}</code>
+      </pre>
+    </ScrollArea>
+  );
 }
 
 export default function MarkdownPage({ title, assetPath, pdfPath }) {
   const { content, loading, error } = useMarkdownAsset(assetPath);
 
   return (
-    <div className="portfolio-doc">
-      <div className="portfolio-docHeader">
-        <h1 className="portfolio-title">{title}</h1>
-        <div className="portfolio-actions">
-          {pdfPath && (
-            <a className="portfolio-btn" href={pdfPath} target="_blank" rel="noreferrer">
-              Open PDF
-            </a>
-          )}
+    <Paper withBorder radius="md" p="md">
+      <Group justify="space-between" align="flex-start" mb="sm">
+        <Title order={2} m={0}>
+          {title}
+        </Title>
+        {pdfPath ? (
+          <Button component="a" href={pdfPath} target="_blank" rel="noreferrer" variant="light">
+            Open PDF
+          </Button>
+        ) : null}
+      </Group>
+
+      {loading ? <Text c="dimmed">Loading…</Text> : null}
+
+      {error ? (
+        <Alert color="red" title="Could not load portfolio content">
+          {String(error?.message || error)}
+        </Alert>
+      ) : null}
+
+      {!loading && !error ? (
+        <div className="portfolio-markdown">
+          <ReactMarkdown
+            remarkPlugins={[remarkGfm]}
+            components={{
+              code: CodeBlock,
+              a({ children, ...props }) {
+                return (
+                  <a {...props} target="_blank" rel="noreferrer">
+                    {children}
+                  </a>
+                );
+              },
+            }}
+          >
+            {content}
+          </ReactMarkdown>
         </div>
-      </div>
-
-      {loading && <div className="portfolio-note">Loading…</div>}
-
-      {error && (
-        <div className="portfolio-error">
-          Could not load portfolio content. {String(error?.message || error)}
-        </div>
-      )}
-
-      {!loading && !error && (
-        <div
-          className="portfolio-markdown"
-          // Portfolio content is authored by you and served locally.
-          // We still escape HTML and render a limited markdown subset.
-          dangerouslySetInnerHTML={{ __html: markdownToHtml(content) }}
-        />
-      )}
-    </div>
+      ) : null}
+    </Paper>
   );
 }

@@ -2,6 +2,7 @@
  * Public ePortfolio layout (no login required).
  */
 import { NavLink, Outlet } from 'react-router-dom';
+import { AppShell, Group, Title, Text, Button, Stack, Divider } from '@mantine/core';
 import './PortfolioLayout.css';
 
 function NavItem({ to, children }) {
@@ -18,55 +19,59 @@ function NavItem({ to, children }) {
 
 export default function PortfolioLayout() {
   return (
-    <div className="portfolio-shell">
-      <header className="portfolio-topbar">
-        <div className="portfolio-topbarInner">
-          <div className="portfolio-brand">
-            <div className="portfolio-brandTitle">CS 499 ePortfolio</div>
-            <div className="portfolio-brandSubtitle">Grazioso Salvare: Animal Shelter Dashboard (Enhanced)</div>
+    <AppShell
+      header={{ height: 72 }}
+      navbar={{ width: 320, breakpoint: 'sm' }}
+      padding="md"
+    >
+      <AppShell.Header>
+        <Group h="100%" px="md" justify="space-between">
+          <div>
+            <Title order={3}>CS 499 ePortfolio</Title>
+            <Text size="sm" c="dimmed">
+              Grazioso Salvare: Animal Shelter Dashboard (Enhanced)
+            </Text>
           </div>
-          <div className="portfolio-topbarLinks">
-            <a className="portfolio-toplink" href="#/app">Open Dashboard App</a>
-          </div>
-        </div>
-      </header>
+          <Button component="a" href="#/app" variant="light">
+            Open Dashboard App
+          </Button>
+        </Group>
+      </AppShell.Header>
 
-      <div className="portfolio-body">
-        <aside className="portfolio-nav">
-          <div className="portfolio-navGroup">
-            <div className="portfolio-navHeading">Portfolio</div>
-            <NavItem to="/">Professional Self-Assessment</NavItem>
-            <NavItem to="/artifact">Artifact Overview</NavItem>
-            <NavItem to="/code-review">Informal Code Review</NavItem>
-            <NavItem to="/artifact-narrative">Artifact Narrative (Overall)</NavItem>
-            <NavItem to="/rubric-evidence">Rubric Evidence Map</NavItem>
-          </div>
+      <AppShell.Navbar p="md">
+        <Stack gap="xs">
+          <Text size="xs" tt="uppercase" fw={700} c="dimmed">
+            Portfolio
+          </Text>
+          <NavItem to="/">Professional Self-Assessment</NavItem>
+          <NavItem to="/artifact">Artifact Overview</NavItem>
+          <NavItem to="/code-review">Informal Code Review</NavItem>
+          <NavItem to="/artifact-narrative">Artifact Narrative (Overall)</NavItem>
+          <NavItem to="/rubric-evidence">Rubric Evidence Map</NavItem>
 
-          <div className="portfolio-navGroup">
-            <div className="portfolio-navHeading">Enhancement Narratives</div>
-            <NavItem to="/enhancements/software">Software Design & Engineering</NavItem>
-            <NavItem to="/enhancements/algorithms">Algorithms & Data Structures</NavItem>
-            <NavItem to="/enhancements/databases">Databases</NavItem>
-          </div>
+          <Divider my="sm" />
 
-          <div className="portfolio-navGroup">
-            <div className="portfolio-navHeading">Repository</div>
-            <a className="portfolio-navLink" href="./" target="_blank" rel="noreferrer">
-              View Site Root
-            </a>
-          </div>
-        </aside>
+          <Text size="xs" tt="uppercase" fw={700} c="dimmed">
+            Enhancement Narratives
+          </Text>
+          <NavItem to="/enhancements/software">Software Design & Engineering</NavItem>
+          <NavItem to="/enhancements/algorithms">Algorithms & Data Structures</NavItem>
+          <NavItem to="/enhancements/databases">Databases</NavItem>
 
-        <main className="portfolio-content">
-          <Outlet />
-        </main>
-      </div>
+          <Divider my="sm" />
 
-      <footer className="portfolio-footer">
-        <div className="portfolio-footerInner">
-          <span>Focus: Technical Leadership (architecture decisions, trade-offs, security mindset)</span>
-        </div>
-      </footer>
-    </div>
+          <Text size="xs" tt="uppercase" fw={700} c="dimmed">
+            Repository
+          </Text>
+          <Button component="a" href="./" target="_blank" rel="noreferrer" variant="subtle" justify="flex-start" p={0}>
+            View Site Root
+          </Button>
+        </Stack>
+      </AppShell.Navbar>
+
+      <AppShell.Main>
+        <Outlet />
+      </AppShell.Main>
+    </AppShell>
   );
 }
