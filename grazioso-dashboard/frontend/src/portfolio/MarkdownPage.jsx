@@ -29,12 +29,21 @@ function CodeBlock({ inline, children, ...props }) {
 
   return (
     <ScrollArea type="auto" offsetScrollbars>
-      <Paper withBorder radius="md" p="sm" bg="dark.9" style={{ marginTop: '0.75rem', marginBottom: '0.75rem' }}>
+      <Paper 
+        withBorder 
+        radius="md" 
+        p="sm" 
+        style={{ 
+          marginTop: '0.75rem', 
+          marginBottom: '0.75rem',
+          backgroundColor: 'light-dark(var(--mantine-color-gray-0), var(--mantine-color-dark-6))',
+        }}
+      >
         <code
           style={{
             fontFamily: 'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace',
             fontSize: '0.9rem',
-            color: '#e5e7eb',
+            color: 'light-dark(var(--mantine-color-gray-9), var(--mantine-color-gray-1))',
             display: 'block',
             whiteSpace: 'pre',
           }}
@@ -81,7 +90,38 @@ export default function MarkdownPage({ title, assetPath, pdfPath }) {
           ) : null}
 
           {!loading && !error ? (
-            <TypographyStylesProvider>
+            <TypographyStylesProvider
+              styles={{
+                root: {
+                  '& p': {
+                    marginTop: '0.75rem',
+                    marginBottom: '0.75rem',
+                    lineHeight: 1.6,
+                  },
+                  '& p:first-of-type': { 
+                    marginTop: 0 
+                  },
+                  '& p:last-of-type': { 
+                    marginBottom: 0 
+                  },
+                  '& h1, & h2, & h3, & h4, & h5, & h6': {
+                    marginTop: '1.5rem',
+                    marginBottom: '0.75rem',
+                  },
+                  '& h1:first-of-type, & h2:first-of-type, & h3:first-of-type': {
+                    marginTop: 0,
+                  },
+                  '& ul, & ol': {
+                    marginTop: '0.75rem',
+                    marginBottom: '0.75rem',
+                  },
+                  '& li': {
+                    marginTop: '0.25rem',
+                    marginBottom: '0.25rem',
+                  },
+                },
+              }}
+            >
               <ReactMarkdown
                 remarkPlugins={[remarkGfm]}
                 components={{

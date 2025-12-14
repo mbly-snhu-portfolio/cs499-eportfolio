@@ -2,7 +2,7 @@
  * Public ePortfolio layout (no login required).
  */
 import { NavLink as RouterNavLink, Outlet } from 'react-router-dom';
-import { AppShell, NavLink, Group, Title, Text, Button, Stack, Divider, Anchor } from '@mantine/core';
+import { AppShell, NavLink, Group, Title, Text, Button, Stack, Divider, Anchor, ActionIcon, useComputedColorScheme, useMantineColorScheme } from '@mantine/core';
 import {
   IconFileText,
   IconCode,
@@ -11,6 +11,8 @@ import {
   IconLayout,
   IconChecklist,
   IconExternalLink,
+  IconSun,
+  IconMoon,
 } from '@tabler/icons-react';
 
 function NavItem({ to, children, icon }) {
@@ -32,16 +34,18 @@ function NavItem({ to, children, icon }) {
 }
 
 export default function PortfolioLayout() {
+  const { setColorScheme } = useMantineColorScheme();
+  const computedColorScheme = useComputedColorScheme('light');
+
+  const toggleColorScheme = () => {
+    setColorScheme(computedColorScheme === 'dark' ? 'light' : 'dark');
+  };
+
   return (
     <AppShell
       header={{ height: 70 }}
       navbar={{ width: 300, breakpoint: 'sm' }}
       padding="xl"
-      styles={{
-        main: {
-          background: 'var(--mantine-color-gray-0)',
-        },
-      }}
     >
       <AppShell.Header>
         <Group h="100%" px="xl" justify="space-between" wrap="nowrap">
@@ -53,9 +57,19 @@ export default function PortfolioLayout() {
               Grazioso Salvare: Animal Shelter Dashboard
             </Text>
           </div>
-          <Button component="a" href="#/app" variant="gradient" gradient={{ from: 'blue', to: 'cyan' }}>
-            Open Dashboard App
-          </Button>
+          <Group gap="md">
+            <ActionIcon
+              onClick={toggleColorScheme}
+              variant="default"
+              size="lg"
+              aria-label="Toggle color scheme"
+            >
+              {computedColorScheme === 'dark' ? <IconSun size={20} /> : <IconMoon size={20} />}
+            </ActionIcon>
+            <Button component="a" href="#/app" variant="gradient" gradient={{ from: 'blue', to: 'cyan' }}>
+              Open Dashboard App
+            </Button>
+          </Group>
         </Group>
       </AppShell.Header>
 
