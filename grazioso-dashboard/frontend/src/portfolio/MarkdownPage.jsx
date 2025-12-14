@@ -91,36 +91,6 @@ export default function MarkdownPage({ title, assetPath, pdfPath }) {
 
           {!loading && !error ? (
             <TypographyStylesProvider
-              styles={{
-                root: {
-                  '& p': {
-                    marginTop: '0.75rem',
-                    marginBottom: '0.75rem',
-                    lineHeight: 1.6,
-                  },
-                  '& p:first-of-type': { 
-                    marginTop: 0 
-                  },
-                  '& p:last-of-type': { 
-                    marginBottom: 0 
-                  },
-                  '& h1, & h2, & h3, & h4, & h5, & h6': {
-                    marginTop: '1.5rem',
-                    marginBottom: '0.75rem',
-                  },
-                  '& h1:first-of-type, & h2:first-of-type, & h3:first-of-type': {
-                    marginTop: 0,
-                  },
-                  '& ul, & ol': {
-                    marginTop: '0.75rem',
-                    marginBottom: '0.75rem',
-                  },
-                  '& li': {
-                    marginTop: '0.25rem',
-                    marginBottom: '0.25rem',
-                  },
-                },
-              }}
             >
               <ReactMarkdown
                 remarkPlugins={[remarkGfm]}
