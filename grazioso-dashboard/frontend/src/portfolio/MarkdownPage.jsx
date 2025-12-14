@@ -5,10 +5,22 @@
  */
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
-import { Alert, Button, Code, Group, Paper, ScrollArea, Text, Title } from '@mantine/core';
+import {
+  Alert,
+  Button,
+  Code,
+  Container,
+  Group,
+  Paper,
+  ScrollArea,
+  Stack,
+  Text,
+  Title,
+  TypographyStylesProvider,
+} from '@mantine/core';
+import { IconFileTypePdf } from '@tabler/icons-react';
 
 import useMarkdownAsset from './useMarkdownAsset';
-import './PortfolioLayout.css';
 
 function CodeBlock({ inline, children, ...props }) {
   if (inline) {
@@ -17,9 +29,20 @@ function CodeBlock({ inline, children, ...props }) {
 
   return (
     <ScrollArea type="auto" offsetScrollbars>
-      <pre className="portfolio-codeBlock">
-        <code {...props}>{children}</code>
-      </pre>
+      <Paper withBorder radius="md" p="sm" bg="dark.9" style={{ marginTop: '0.75rem', marginBottom: '0.75rem' }}>
+        <code
+          style={{
+            fontFamily: 'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace',
+            fontSize: '0.9rem',
+            color: '#e5e7eb',
+            display: 'block',
+            whiteSpace: 'pre',
+          }}
+          {...props}
+        >
+          {children}
+        </code>
+      </Paper>
     </ScrollArea>
   );
 }
@@ -28,45 +51,56 @@ export default function MarkdownPage({ title, assetPath, pdfPath }) {
   const { content, loading, error } = useMarkdownAsset(assetPath);
 
   return (
-    <Paper withBorder radius="md" p="md">
-      <Group justify="space-between" align="flex-start" mb="sm">
-        <Title order={2} m={0}>
-          {title}
-        </Title>
-        {pdfPath ? (
-          <Button component="a" href={pdfPath} target="_blank" rel="noreferrer" variant="light">
-            Open PDF
-          </Button>
-        ) : null}
-      </Group>
+    <Container size="lg" p={0}>
+      <Stack gap="lg">
+        <Paper withBorder radius="md" p="xl" shadow="xs">
+          <Group justify="space-between" align="flex-start" mb="lg" wrap="nowrap">
+            <Title order={1} size="h2">
+              {title}
+            </Title>
+            {pdfPath ? (
+              <Button
+                component="a"
+                href={pdfPath}
+                target="_blank"
+                rel="noreferrer"
+                variant="light"
+                leftSection={<IconFileTypePdf size={18} />}
+              >
+                Open PDF
+              </Button>
+            ) : null}
+          </Group>
 
-      {loading ? <Text c="dimmed">Loading…</Text> : null}
+          {loading ? <Text c="dimmed">Loading content...</Text> : null}
 
-      {error ? (
-        <Alert color="red" title="Could not load portfolio content">
-          {String(error?.message || error)}
-        </Alert>
-      ) : null}
+          {error ? (
+            <Alert color="red" title="Could not load portfolio content" variant="light">
+              {String(error?.message || error)}
+            </Alert>
+          ) : null}
 
-      {!loading && !error ? (
-        <div className="portfolio-markdown">
-          <ReactMarkdown
-            remarkPlugins={[remarkGfm]}
-            components={{
-              code: CodeBlock,
-              a({ children, ...props }) {
-                return (
-                  <a {...props} target="_blank" rel="noreferrer">
-                    {children}
-                  </a>
-                );
-              },
-            }}
-          >
-            {content}
-          </ReactMarkdown>
-        </div>
-      ) : null}
-    </Paper>
+          {!loading && !error ? (
+            <TypographyStylesProvider>
+              <ReactMarkdown
+                remarkPlugins={[remarkGfm]}
+                components={{
+                  code: CodeBlock,
+                  a({ children, href, ...props }) {
+                    return (
+                      <a href={href} target="_blank" rel="noreferrer" {...props}>
+                        {children}
+                      </a>
+                    );
+                  },
+                }}
+              >
+                {content}
+              </ReactMarkdown>
+            </TypographyStylesProvider>
+          ) : null}
+        </Paper>
+      </Stack>
+    </Container>
   );
 }
