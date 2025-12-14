@@ -38,6 +38,8 @@ export default function PortfolioLayout() {
             <NavItem to="/">Professional Self-Assessment</NavItem>
             <NavItem to="/artifact">Artifact Overview</NavItem>
             <NavItem to="/code-review">Informal Code Review</NavItem>
+            <NavItem to="/artifact-narrative">Artifact Narrative (Overall)</NavItem>
+            <NavItem to="/rubric-evidence">Rubric Evidence Map</NavItem>
           </div>
 
           <div className="portfolio-navGroup">

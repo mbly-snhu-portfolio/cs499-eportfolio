@@ -77,6 +77,24 @@ function AppRoutes() {
             />
           }
         />
+        <Route
+          path="artifact-narrative"
+          element={
+            <MarkdownPage
+              title="Artifact Narrative (Overall)"
+              assetPath="portfolio/artifact_narrative_overall.md"
+            />
+          }
+        />
+        <Route
+          path="rubric-evidence"
+          element={
+            <MarkdownPage
+              title="Rubric Evidence Map"
+              assetPath="portfolio/rubric_evidence_map.md"
+            />
+          }
+        />
       </Route>
 
       <Route path="*" element={<Navigate to="/" replace />} />
